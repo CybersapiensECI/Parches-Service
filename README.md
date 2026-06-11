@@ -1,2 +1,2 @@
 # Parches-Service
-Todo lo realicionado con la logica de un parche
+Todo lo relacionado con la logica de un parche
