@@ -13,4 +13,6 @@ El diagrama de componentes específicos detalla la arquitectura de un microservi
 En el núcleo y la periferia derecha se orquesta la lógica de negocio y la persistencia de datos. Los casos de uso son implementados por los servicios de aplicación (ParcheCommandService, ParcheQueryService e InvitationApplicationService), los cuales coordinan las reglas del dominio antes de interactuar con el exterior. Finalmente, el flujo se conecta con los puertos de salida (Ports / Out), donde los adaptadores de infraestructura (ParcheDatabaseAdapter e InvitationDatabaseAdapter) implementan las interfaces SPI. Mediante este mecanismo de inversión de dependencias, la tecnología queda subordinada a las necesidades del negocio, canalizando el almacenamiento definitivo hacia la base de datos PostgreSQL de forma transparente y modular.
 
 
+![DiagramaEspecificoParchesAlphaECI-Página-3.drawio (1).png](Images/Uml/DiagramaEspecificoParchesAlphaECI-P%C3%A1gina-3.drawio%20%281%29.png)
+
 
