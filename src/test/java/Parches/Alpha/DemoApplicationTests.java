@@ -1,4 +1,4 @@
-package Parches.demo;
+package Parches.Alpha;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
