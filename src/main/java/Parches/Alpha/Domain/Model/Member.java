@@ -1,5 +1,6 @@
 package Parches.Alpha.Domain.Model;
 
+import Parches.Alpha.Domain.Enums.MemberRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,13 +15,13 @@ import java.util.UUID;
 public class Member {
     private final UUID id;
     private final UUID parcheId;
-    private final UUID student;
+    private final UUID studentId;
     private final LocalDateTime unionDate;
     private final MemberRole role;
 
     public static class MemberBuilder {
         public Member build() {
-            Optional.ofNullable(this.student)
+            Optional.ofNullable(this.studentId)
                     .orElseThrow(() -> new RuntimeException("El identificador del estudiante miembro no puede ser nulo."));
 
             Optional.ofNullable(this.parcheId)
@@ -35,7 +36,7 @@ public class Member {
             LocalDateTime finalUnionDate = Optional.ofNullable(this.unionDate)
                     .orElseGet(() -> LocalDateTime.now());
 
-            return new Member(finalId, this.parcheId, this.student, finalUnionDate, finalRole);
+            return new Member(finalId, this.parcheId, this.studentId, finalUnionDate, finalRole);
         }
     }
 }

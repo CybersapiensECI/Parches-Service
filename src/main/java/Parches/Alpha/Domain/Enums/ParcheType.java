@@ -1,4 +1,4 @@
-package Parches.Alpha.Domain.Model;
+package Parches.Alpha.Domain.Enums;
 
 public enum ParcheType {
     PUBLIC,
