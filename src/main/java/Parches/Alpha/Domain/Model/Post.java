@@ -46,12 +46,11 @@ public class Post {
     }
 
     public void addComment(UUID authorId, String text) {
-        Optional.ofNullable(text)
-                .filter(t -> !t.trim().isEmpty())
-                .orElseThrow(() -> new RuntimeException("El texto del comentario no puede estar vacío."));
+        Comment newComment = Comment.builder().authorId(authorId).text(text).build();
+        newComment.validate();
 
         this.comments = Optional.ofNullable(this.comments).orElseGet(ArrayList::new);
-        this.comments.add(Comment.builder().authorId(authorId).text(text).build());
+        this.comments.add(newComment);
     }
 
     public void toggleReaction(UUID studentId) {
@@ -62,7 +61,11 @@ public class Post {
                 .findFirst()
                 .ifPresentOrElse(
                         this.reactions::remove,
-                        () -> this.reactions.add(Reaction.builder().studentId(studentId).build())
+                        () -> {
+                            Reaction newReaction = Reaction.builder().studentId(studentId).build();
+                            newReaction.validate();
+                            this.reactions.add(newReaction);
+                        }
                 );
     }
 

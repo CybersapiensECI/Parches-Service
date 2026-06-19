@@ -55,7 +55,11 @@ public class Comment {
                 .findFirst()
                 .ifPresentOrElse(
                         this.reactions::remove,
-                        () -> this.reactions.add(Reaction.builder().studentId(studentId).build())
+                        () -> {
+                            Reaction newReaction = Reaction.builder().studentId(studentId).build();
+                            newReaction.validate();
+                            this.reactions.add(newReaction);
+                        }
                 );
     }
 }

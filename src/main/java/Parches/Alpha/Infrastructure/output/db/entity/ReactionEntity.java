@@ -6,12 +6,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "members")
+@Table(name = "reactions")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberEntity {
+public class ReactionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -20,13 +20,14 @@ public class MemberEntity {
     @Column(name = "student_id", nullable = false)
     private UUID studentId;
 
-    @Column(name = "union_date", nullable = false)
-    private LocalDateTime unionDate;
-
-    @Column(name = "role", nullable = false, length = 20)
-    private String role; // STUDENT / CREATOR
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parche_id", nullable = false)
-    private ParcheEntity parche;
+    @JoinColumn(name = "post_id")
+    private PostEntity post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private CommentEntity comment;
 }

@@ -44,7 +44,7 @@ public class ParcheEntity {
     private LocalDate date;
 
     @NotNull
-    @Column(nullable = false)
+    @Column(name = "hora", nullable = false)
     private LocalTime hour;
 
     @Min(1) @Max(30)
@@ -53,7 +53,7 @@ public class ParcheEntity {
 
     @NotNull
     @Column(name = "owner_id", nullable = false)
-    private UUID ownerId;
+    private UUID creatorStudentId;
 
     @Column(name = "creation_date", nullable = false, updatable = false)
     private LocalDateTime creationDate;
@@ -67,6 +67,10 @@ public class ParcheEntity {
     // Relación unida en cascada con los miembros del parche (1:N)
     @OneToMany(mappedBy = "parche", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MemberEntity> members;
+
+    // Relación unida en cascada con los posts del parche (1:N)
+    @OneToMany(mappedBy = "parche", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PostEntity> posts;
 
     @PrePersist
     public void prePersist() {
