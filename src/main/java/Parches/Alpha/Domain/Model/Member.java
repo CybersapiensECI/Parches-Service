@@ -4,6 +4,7 @@ import Parches.Alpha.Domain.Enums.MemberRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -11,32 +12,27 @@ import java.util.UUID;
 
 @Data
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class Member {
-    private final UUID id;
-    private final UUID parcheId;
-    private final UUID studentId;
-    private final LocalDateTime unionDate;
-    private final MemberRole role;
+    private UUID id;
+    private UUID parcheId;
+    private UUID studentId;
+    private LocalDateTime unionDate;
+    private MemberRole role;
 
-    public static class MemberBuilder {
-        public Member build() {
-            Optional.ofNullable(this.studentId)
-                    .orElseThrow(() -> new RuntimeException("El identificador del estudiante miembro no puede ser nulo."));
+    /**
+     * Valida e inicializa los campos usando flujos funcionales sin un solo 'if'.
+     */
+    public void validateAndInitialize() {
+        this.studentId = Optional.ofNullable(this.studentId)
+                .orElseThrow(() -> new RuntimeException("El identificador del estudiante miembro no puede ser nulo."));
 
-            Optional.ofNullable(this.parcheId)
-                    .orElseThrow(() -> new RuntimeException("El miembro debe estar asociado a un parche válido."));
+        this.parcheId = Optional.ofNullable(this.parcheId)
+                .orElseThrow(() -> new RuntimeException("El miembro debe estar asociado a un parche válido."));
 
-            UUID finalId = Optional.ofNullable(this.id)
-                    .orElseGet(() -> UUID.randomUUID());
-
-            MemberRole finalRole = Optional.ofNullable(this.role)
-                    .orElseGet(() -> MemberRole.STUDENT);
-
-            LocalDateTime finalUnionDate = Optional.ofNullable(this.unionDate)
-                    .orElseGet(() -> LocalDateTime.now());
-
-            return new Member(finalId, this.parcheId, this.studentId, finalUnionDate, finalRole);
-        }
+        this.id = Optional.ofNullable(this.id).orElseGet(UUID::randomUUID);
+        this.role = Optional.ofNullable(this.role).orElse(MemberRole.STUDENT);
+        this.unionDate = Optional.ofNullable(this.unionDate).orElseGet(LocalDateTime::now);
     }
 }

@@ -8,11 +8,18 @@ El uso de esta estructura nos ayuda a obtener un Código con alta cohesión y un
 ![Diagrama de clases ParchesAlphaECI.drawio (1).png](Images/Uml/Diagrama%20de%20clases%20ParchesAlphaECI.drawio%20%281%29.png)
 
 ## Diagrama de componentes especificos 
-El diagrama de componentes específicos detalla la arquitectura de un microservicio estructurado bajo los principios de la Arquitectura Hexagonal y la segregación de comandos y consultas (CQRS). En la periferia izquierda, los adaptadores de entrada (ParcheRestController e InvitationRestController) capturan las solicitudes HTTP y las delegan hacia la capa de casos de uso (Ports / In). Esta separación garantiza que cada acción del sistema —como la creación, edición, unión o consulta de parches y la gestión de invitaciones— esté aislada en interfaces independientes y planas, cumpliendo con el Principio de Responsabilidad Única.
+Este diagrama detalla la arquitectura del microservicio estructurada bajo los principios de la Arquitectura Hexagonal y la segregación de responsabilidades. En la periferia izquierda, los adaptadores de entrada (ParcheRestController e InvitationRestController) capturan las solicitudes HTTP y las delegan hacia la capa de casos de uso (Ports / In), aislando cada acción del sistema en interfaces independientes y planas.
 
-En el núcleo y la periferia derecha se orquesta la lógica de negocio y la persistencia de datos. Los casos de uso son implementados por los servicios de aplicación (ParcheCommandService, ParcheQueryService e InvitationApplicationService), los cuales coordinan las reglas del dominio antes de interactuar con el exterior. Finalmente, el flujo se conecta con los puertos de salida (Ports / Out), donde los adaptadores de infraestructura (ParcheDatabaseAdapter e InvitationDatabaseAdapter) implementan las interfaces SPI. Mediante este mecanismo de inversión de dependencias, la tecnología queda subordinada a las necesidades del negocio, canalizando el almacenamiento definitivo hacia la base de datos PostgreSQL de forma transparente y modular.
+En el núcleo central se orquesta la lógica de negocio a través de los servicios de aplicación (ParcheCommandService, ParcheQueryService e 
+InvitationApplicationService), los cuales coordinan las reglas con las entidades del dominio (Parche, Member, Invitation). Finalmente, mediante la inversión de 
+dependencias, el flujo se conecta con los puertos de salida (Ports / Out / SPI) donde los adaptadores de infraestructura (ParcheDatabaseAdapter e InvitationDatabaseAdapter) canalizan el almacenamiento definitivo de forma modular hacia una única base de datos física PostgreSQL.
+
+![DiagramaEspecificoParchesAlphaECI-Página-4.drawio.png](Images/Uml/DiagramaEspecificoParchesAlphaECI-P%C3%A1gina-4.drawio.png)
 
 
-![DiagramaEspecificoParchesAlphaECI-Página-3.drawio (1).png](Images/Uml/DiagramaEspecificoParchesAlphaECI-P%C3%A1gina-3.drawio%20%281%29.png)
+## Diagrama de Base de datos Relacional 
+El diagrama de base de datos relacional modela de forma consistente la persistencia en PostgreSQL para el microservicio de Parches, mapeando con precisión los tipos de datos y las restricciones del modelo de dominio. La estructura se fundamenta en la tabla principal PARCHES y se desacopla mediante relaciones de uno a muchos ($1:N$) hacia las entidades satélites MEMBERS, INVITATIONS y POSTS, empleando identificadores únicos globales (UUID) como llaves primarias para garantizar la consistencia en entornos distribuidos. 
 
+La elección de una base de datos relacional (SQL) es superior para este sistema sobre una opción NoSQL debido a la alta interdependencia y necesidad de integridad referencial estricta entre las tablas; esto permite asegurar mediante llaves foráneas y restricciones de unicidad compuestas que un estudiante no se una dos veces al mismo parche o que las invitaciones duplicadas se bloqueen nativamente a nivel de motor, garantizando la consistencia inmediata de los datos (propiedades ACID).
 
+![DiagramaDATOSParchesAlphaECI.drawio (1).png](Images/Uml/DiagramaDATOSParchesAlphaECI.drawio%20%281%29.png)
