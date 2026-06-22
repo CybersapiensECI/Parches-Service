@@ -2,6 +2,7 @@ package Parches.Alpha.Infrastructure.output.db.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -11,11 +12,25 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberEntity {
+public class MemberEntity implements Persistable<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Transient
+    @Builder.Default
+    private boolean isNew = true;
+
+    @Override
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    @PostPersist
+    @PostLoad
+    public void markNotNew() {
+        this.isNew = false;
+    }
 
     @Column(name = "student_id", nullable = false)
     private UUID studentId;

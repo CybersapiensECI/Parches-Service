@@ -35,6 +35,9 @@ public class ParcheDatabaseAdapter implements ParcheRepositorySPI {
     @Override
     public UUID save(Parche parche) {
         ParcheEntity entity = ParcheMapper.toEntity(parche);
+        if (parcheJpaRepository.existsById(entity.getId())) {
+            entity.setNew(false);
+        }
         ParcheEntity saved = parcheJpaRepository.save(entity);
         return saved.getId();
     }

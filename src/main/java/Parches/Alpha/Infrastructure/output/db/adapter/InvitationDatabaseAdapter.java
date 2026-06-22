@@ -5,6 +5,8 @@ import Parches.Alpha.Domain.spi.InvitationRepositorySPI;
 import Parches.Alpha.Infrastructure.output.db.entity.InvitationEntity;
 import Parches.Alpha.Infrastructure.output.db.mapper.InvitationMapper;
 import Parches.Alpha.Infrastructure.output.db.repository.InvitationJpaRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,9 @@ public class InvitationDatabaseAdapter implements InvitationRepositorySPI {
 
     private final InvitationJpaRepository invitationJpaRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Autowired
     public InvitationDatabaseAdapter(InvitationJpaRepository invitationJpaRepository) {
         this.invitationJpaRepository = invitationJpaRepository;
@@ -24,6 +29,9 @@ public class InvitationDatabaseAdapter implements InvitationRepositorySPI {
     @Override
     public UUID save(Invitation invitation) {
         InvitationEntity entity = InvitationMapper.toEntity(invitation);
+        if (invitationJpaRepository.existsById(entity.getId())) {
+            entity.setNew(false);
+        }
         InvitationEntity saved = invitationJpaRepository.save(entity);
         return saved.getId();
     }

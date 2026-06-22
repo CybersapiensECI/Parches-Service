@@ -27,11 +27,13 @@ public class Invitation {
 
     public static class InvitationBuilder {
         public Invitation build() {
-            Optional.ofNullable(this.parcheId).orElseThrow(() -> new RuntimeException("El id del parche es obligatorio."));
-            Optional.ofNullable(this.inviterId).orElseThrow(() -> new RuntimeException("El id del invitador es obligatorio."));
-            Optional.ofNullable(this.invitedStudentId).orElseThrow(() -> new RuntimeException("El id del estudiante invitado es obligatorio."));
+            Optional.ofNullable(this.parcheId)
+                    .orElseThrow(() -> new RuntimeException("El id del parche es obligatorio."));
+            Optional.ofNullable(this.inviterId)
+                    .orElseThrow(() -> new RuntimeException("El id del invitador es obligatorio."));
+            Optional.ofNullable(this.invitedStudentId)
+                    .orElseThrow(() -> new RuntimeException("El id del estudiante invitado es obligatorio."));
 
-            // Aquí corregido: se usa 'this.' para mapear las propiedades del builder interno
             return new Invitation(
                     this.id$set ? this.id$value : UUID.randomUUID(),
                     this.parcheId,
@@ -39,8 +41,7 @@ public class Invitation {
                     this.invitedStudentId,
                     this.state$set ? this.state$value : new PendingState(),
                     this.sentAt$set ? this.sentAt$value : LocalDateTime.now(),
-                    this.respondedAt
-            );
+                    this.respondedAt);
         }
     }
 
