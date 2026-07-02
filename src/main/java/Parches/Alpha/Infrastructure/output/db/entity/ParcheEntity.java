@@ -79,6 +79,10 @@ public class ParcheEntity implements Persistable<UUID> {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    @Column(name = "allowed_member_invitation", nullable = false)
+    @Builder.Default
+    private boolean allowedMemberInvitation = true;
+
     // Relación unida en cascada con los miembros del parche (1:N)
     @OneToMany(mappedBy = "parche", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MemberEntity> members;

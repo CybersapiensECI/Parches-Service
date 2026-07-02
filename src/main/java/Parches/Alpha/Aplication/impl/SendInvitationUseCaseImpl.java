@@ -38,8 +38,9 @@ public class SendInvitationUseCaseImpl implements SendInvitationUseCase {
             throw new ActionNotAllowedException("El remitente debe ser miembro del parche para enviar invitaciones.");
         }
 
-        if (!parche.isAllowedMemberInvitation() && !parche.getCreatorStudentId().equals(command.senderId())) {
-            throw new ActionNotAllowedException("Solo el capitán del parche puede invitar estudiantes.");
+        boolean isCreator = parche.getCreatorStudentId().equals(command.senderId());
+        if (!isCreator && !parche.isAllowedMemberInvitation()) {
+            throw new Parches.Alpha.Domain.exception.DomainException("El parche no permite que los miembros comunes envíen invitaciones.");
         }
 
         boolean existsPending = invitationRepository.existsPendingInvitation(command.parcheId(), command.invitedId());

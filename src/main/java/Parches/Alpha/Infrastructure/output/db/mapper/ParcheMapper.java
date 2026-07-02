@@ -24,6 +24,7 @@ public class ParcheMapper {
                 .status(entity.getStatus() != null ? ParcheStatus.valueOf(entity.getStatus()) : null)
                 .creatorStudentId(entity.getCreatorStudentId())
                 .creationDate(entity.getCreationDate())
+                .allowedMemberInvitation(entity.isAllowedMemberInvitation())
                 .eventId(entity.getEventId())
                 .build();
 
@@ -58,6 +59,7 @@ public class ParcheMapper {
                 .status(domain.getStatus() != null ? domain.getStatus().name() : null)
                 .creatorStudentId(domain.getCreatorStudentId())
                 .creationDate(domain.getCreationDate())
+                .allowedMemberInvitation(domain.isAllowedMemberInvitation())
                 .eventId(domain.getEventId())
                 .build();
 
@@ -98,7 +100,7 @@ public class ParcheMapper {
                 .build();
     }
 
-    private static Post toPostDomain(PostEntity entity) {
+    public static Post toPostDomain(PostEntity entity) {
         if (entity == null) return null;
         Post domain = Post.builder()
                 .id(entity.getId())

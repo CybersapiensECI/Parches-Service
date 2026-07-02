@@ -101,4 +101,14 @@ public class ParcheDatabaseAdapter implements ParcheRepositorySPI {
     public long countActiveParchesByStudentId(UUID studentId) {
         return parcheJpaRepository.countActiveParchesByStudentId(studentId);
     }
+
+    @Override
+    public Optional<Parche> findByPostId(UUID postId) {
+        return parcheJpaRepository.findByPostId(postId).map(ParcheMapper::toDomain);
+    }
+
+    @Override
+    public Optional<Parche> findByCommentId(UUID commentId) {
+        return parcheJpaRepository.findByCommentId(commentId).map(ParcheMapper::toDomain);
+    }
 }

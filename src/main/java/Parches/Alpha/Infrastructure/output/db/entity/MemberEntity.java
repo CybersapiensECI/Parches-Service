@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "members")
+@Table(name = "parche_members")
 @Data
 @Builder
 @NoArgsConstructor
