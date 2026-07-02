@@ -1,59 +1,65 @@
 package Parches.Alpha.Domain.Model;
 
-import lombok.Getter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Getter
+@Data
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class Comment {
-    private final UUID id;
-    private final UUID authorId;
-    private String text;
-    private final LocalDateTime createdAt;
-    private final List<Reaction> reactions;
 
-    @Builder
-    public Comment(UUID id, UUID authorId, String text) {
-        Optional.ofNullable(authorId)
+    @Builder.Default
+    private UUID id = UUID.randomUUID();
+
+    private UUID authorId;
+    private String text;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    private List<Reaction> reactions = new ArrayList<>();
+
+    /**
+     * Valida de forma funcional que el comentario cumpla con las reglas de negocio.
+     */
+    public void validate() {
+        Optional.ofNullable(this.authorId)
                 .orElseThrow(() -> new RuntimeException("El id del autor del comentario no puede ser nulo."));
 
-        Optional.ofNullable(text)
+        Optional.ofNullable(this.text)
                 .filter(t -> !t.trim().isEmpty())
                 .orElseThrow(() -> new RuntimeException("El texto del comentario no puede estar vacío."));
-
-        this.id = id != null ? id : UUID.randomUUID();
-        this.authorId = authorId;
-        this.text = text;
-        this.createdAt = LocalDateTime.now();
-        this.reactions = new ArrayList<>();
     }
 
     /**
-     * Enciende o apaga la reacción (corazón) de un estudiante en este comentario.
+     * Enciende o apaga la reacción de un estudiante en este comentario.
      */
     public void toggleReaction(UUID studentId) {
         Optional.ofNullable(studentId)
                 .orElseThrow(() -> new RuntimeException("El id del estudiante que reacciona no puede ser nulo."));
 
-        Optional<Reaction> existingReaction = this.reactions.stream()
-                .filter(r -> r.getStudentId().equals(studentId))
-                .findFirst();
+        this.reactions = Optional.ofNullable(this.reactions).orElseGet(ArrayList::new);
 
-        existingReaction.ifPresentOrElse(
-                this.reactions::remove,
-                () -> this.reactions.add(Reaction.builder().studentId(studentId).build())
-        );
-    }
-
-    public List<Reaction> getReactions() {
-        return Collections.unmodifiableList(reactions);
+        this.reactions.stream()
+                .filter(r -> studentId.equals(r.getStudentId()))
+                .findFirst()
+                .ifPresentOrElse(
+                        this.reactions::remove,
+                        () -> {
+                            Reaction newReaction = Reaction.builder().studentId(studentId).build();
+                            newReaction.validate();
+                            this.reactions.add(newReaction);
+                        }
+                );
     }
 }
