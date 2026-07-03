@@ -103,6 +103,13 @@ public class ParcheDatabaseAdapter implements ParcheRepositorySPI {
     }
 
     @Override
+    public List<Parche> findByStudentId(UUID studentId) {
+        return parcheJpaRepository.findByStudentId(studentId).stream()
+                .map(ParcheMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Parche> findByPostId(UUID postId) {
         return parcheJpaRepository.findByPostId(postId).map(ParcheMapper::toDomain);
     }

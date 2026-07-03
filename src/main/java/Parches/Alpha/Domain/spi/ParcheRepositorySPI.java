@@ -12,6 +12,7 @@ public interface ParcheRepositorySPI {
     Optional<Parche> findById(UUID id);
     List<Parche> findAllWithFilters(ParcheQueryFilter filter, int page, int size);
     long countActiveParchesByStudentId(UUID studentId);
+    List<Parche> findByStudentId(UUID studentId);
     Optional<Parche> findByPostId(UUID postId);
     Optional<Parche> findByCommentId(UUID commentId);
 }

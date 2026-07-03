@@ -8,6 +8,7 @@ import Parches.Alpha.Aplication.ports.SearchAvailableParchesUseCase;
 import Parches.Alpha.Aplication.ports.CreatePostUseCase;
 import Parches.Alpha.Aplication.ports.GetParchePostsUseCase;
 import Parches.Alpha.Aplication.ports.GetParcheMembersUseCase;
+import Parches.Alpha.Aplication.ports.GetUserParchesUseCase;
 import Parches.Alpha.Aplication.ports.ImageStoragePort;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.Model.Post;
@@ -41,6 +42,7 @@ public class ParcheRestController {
     private final CreatePostUseCase createPostUseCase;
     private final GetParchePostsUseCase getParchePostsUseCase;
     private final GetParcheMembersUseCase getParcheMembersUseCase;
+    private final GetUserParchesUseCase getUserParchesUseCase;
     private final ImageStoragePort imageStoragePort;
 
     @PostMapping
@@ -140,6 +142,19 @@ public class ParcheRestController {
     ) {
         List<Member> members = getParcheMembersUseCase.execute(parcheId);
         return ResponseEntity.ok(members);
+    }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get parches by user", description = "Retrieve all parches that a user belongs to.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved parches"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> getUserParches(
+            @Parameter(description = "UUID of the user", required = true) @PathVariable UUID userId
+    ) {
+        List<Parche> parches = getUserParchesUseCase.execute(userId);
+        return ResponseEntity.ok(parches);
     }
 
     @Schema(description = "Request body to join a parche")

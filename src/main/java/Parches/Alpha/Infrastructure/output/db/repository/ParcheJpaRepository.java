@@ -13,6 +13,9 @@ public interface ParcheJpaRepository extends JpaRepository<ParcheEntity, UUID> {
     @Query("SELECT COUNT(p) FROM ParcheEntity p JOIN p.members m WHERE m.studentId = :studentId AND p.status = 'ACTIVE'")
     long countActiveParchesByStudentId(@Param("studentId") UUID studentId);
 
+    @Query("SELECT p FROM ParcheEntity p JOIN p.members m WHERE m.studentId = :studentId")
+    java.util.List<ParcheEntity> findByStudentId(@Param("studentId") UUID studentId);
+
     @Query("SELECT p FROM ParcheEntity p JOIN p.posts post WHERE post.id = :postId")
     java.util.Optional<ParcheEntity> findByPostId(@Param("postId") UUID postId);
 
