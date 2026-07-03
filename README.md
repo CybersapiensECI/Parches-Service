@@ -12,7 +12,8 @@ Este diagrama detalla la arquitectura del microservicio estructurada bajo los pr
 
 En el núcleo central se orquesta la lógica de negocio a través de los servicios de aplicación (ParcheCommandService, ParcheQueryService e 
 InvitationApplicationService), los cuales coordinan las reglas con las entidades del dominio (Parche, Member, Invitation). Finalmente, mediante la inversión de 
-dependencias, el flujo se conecta con los puertos de salida (Ports / Out / SPI) donde los adaptadores de infraestructura (ParcheDatabaseAdapter e InvitationDatabaseAdapter) canalizan el almacenamiento definitivo de forma modular hacia una única base de datos física PostgreSQL.
+dependencias, el flujo se conecta con los puertos de salida (Ports / Out / SPI) donde los adaptadores de infraestructura (ParcheDatabaseAdapter e InvitationDatabaseAdapter) 
+canalizan el almacenamiento definitivo de forma modular hacia una única base de datos física PostgreSQL.
 
 ![DiagramaEspecificoParchesAlphaECI-Página-4.drawio.png](Images/Uml/DiagramaEspecificoParchesAlphaECI-P%C3%A1gina-4.drawio.png)
 
