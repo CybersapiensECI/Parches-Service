@@ -8,6 +8,10 @@ jobs:
   sonar-analysis:
     runs-on: ubuntu-latest
 
+    # 🔥 ESTO CORRIGE EL ERROR 128 EN ORGANIZACIONES DE GITHUB
+    permissions:
+      contents: read
+
     steps:
       - name: Descargar codigo del repositorio
         uses: actions/checkout@v4
