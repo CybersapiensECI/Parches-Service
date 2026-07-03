@@ -20,7 +20,3 @@ canalizan el almacenamiento definitivo de forma modular hacia una única base de
 
 ## Diagrama de Base de datos Relacional 
 El diagrama de base de datos relacional modela de forma consistente la persistencia en PostgreSQL para el microservicio de Parches, mapeando con precisión los tipos de datos y las restricciones del modelo de dominio. La estructura se fundamenta en la tabla principal PARCHES y se desacopla mediante relaciones de uno a muchos ($1:N$) hacia las entidades satélites MEMBERS, INVITATIONS y POSTS, empleando identificadores únicos globales (UUID) como llaves primarias para garantizar la consistencia en entornos distribuidos. 
-
-La elección de una base de datos relacional (SQL) es superior para este sistema sobre una opción NoSQL debido a la alta interdependencia y necesidad de integridad referencial estricta entre las tablas; esto permite asegurar mediante llaves foráneas y restricciones de unicidad compuestas que un estudiante no se una dos veces al mismo parche o que las invitaciones duplicadas se bloqueen nativamente a nivel de motor, garantizando la consistencia inmediata de los datos (propiedades ACID).
-
-![DiagramaDATOSParchesAlphaECI.drawio (1).png](Images/Uml/DiagramaDATOSParchesAlphaECI.drawio%20%281%29.png)
