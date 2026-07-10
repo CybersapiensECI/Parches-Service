@@ -3,6 +3,7 @@ package Parches.Alpha.Infrastructure.input.rest;
 import Parches.Alpha.Aplication.dto.SendInvitationCommand;
 import Parches.Alpha.Aplication.ports.AcceptInvitationUseCase;
 import Parches.Alpha.Aplication.ports.SendInvitationUseCase;
+import Parches.Alpha.Aplication.ports.RejectInvitationUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,6 +25,7 @@ public class InvitationRestController {
 
     private final SendInvitationUseCase sendInvitationUseCase;
     private final AcceptInvitationUseCase acceptInvitationUseCase;
+    private final RejectInvitationUseCase rejectInvitationUseCase;
 
     @PostMapping
     @Operation(summary = "Send invitation", description = "Allows a parche member to invite a student. Common members cannot invite if 'allowedMemberInvitation' is false.")
@@ -55,9 +57,34 @@ public class InvitationRestController {
         return ResponseEntity.ok(java.util.Map.of("message", "Invitación aceptada correctamente."));
     }
 
+    @PostMapping("/{invitationId}/reject")
+    @Operation(summary = "Reject invitation", description = "Allows an invited student to reject a pending invitation.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully rejected invitation"),
+            @ApiResponse(responseCode = "400", description = "Invalid request or state transition error"),
+            @ApiResponse(responseCode = "403", description = "Cannot reject invitation for another student"),
+            @ApiResponse(responseCode = "404", description = "Invitation not found"),
+            @ApiResponse(responseCode = "409", description = "Invitation already responded"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> rejectInvitation(
+            @Parameter(description = "ID of the invitation to reject", required = true)
+            @PathVariable UUID invitationId,
+            @RequestBody RejectRequest request
+    ) {
+        rejectInvitationUseCase.execute(invitationId, request.studentId());
+        return ResponseEntity.ok(java.util.Map.of("message", "Invitación rechazada correctamente."));
+    }
+
     @Schema(description = "Request body to accept an invitation")
     public record AcceptRequest(
             @Schema(description = "UUID of the student accepting the invitation", requiredMode = Schema.RequiredMode.REQUIRED)
+            UUID studentId
+    ) {}
+
+    @Schema(description = "Request body to reject an invitation")
+    public record RejectRequest(
+            @Schema(description = "UUID of the student rejecting the invitation", requiredMode = Schema.RequiredMode.REQUIRED)
             UUID studentId
     ) {}
 }
