@@ -7,7 +7,11 @@ import Parches.Alpha.Aplication.ports.CreateParcheUseCase;
 import Parches.Alpha.Domain.Enums.*;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.messaging.ParcheCreatedMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,15 +19,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
 
     private final ParcheRepositorySPI parcheRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.exchange.notification:notification.exchange}")
+    private String notificationExchange;
 
     @Autowired
-    public CreateParcheUseCaseImpl(ParcheRepositorySPI parcheRepository) {
+    public CreateParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, RabbitTemplate rabbitTemplate) {
         this.parcheRepository = parcheRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -59,6 +69,27 @@ public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
 
         parche.addMember(command.creatorStudentId(), MemberRole.CREATOR);
 
-        return parcheRepository.save(parche);
+        UUID id = parcheRepository.save(parche);
+        publishParcheCreated(id, command.creatorStudentId());
+        return id;
+    }
+
+    /**
+     * chat-service crea la sala grupal a partir de esto. No debe tumbar la
+     * creación del parche si RabbitMQ está caído: se registra y se sigue.
+     */
+    private void publishParcheCreated(UUID parcheId, UUID creatorId) {
+        try {
+            rabbitTemplate.convertAndSend(
+                    notificationExchange,
+                    "parche.created",
+                    ParcheCreatedMessage.builder()
+                            .parcheId(parcheId)
+                            .creatorId(creatorId)
+                            .build());
+        } catch (Exception e) {
+            log.warn("No se pudo publicar el parche creado {} para el chat grupal: {}",
+                    parcheId, e.getMessage());
+        }
     }
 }

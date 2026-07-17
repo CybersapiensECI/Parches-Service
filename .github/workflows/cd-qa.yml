@@ -57,4 +57,10 @@ jobs:
             --set-env-vars \
               "DB_URL=${{ secrets.DB_URL_QA }}" \
               "DB_USERNAME=${{ secrets.DB_USERNAME }}" \
-              "DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+              "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+              "SPRING_RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}" \
+              "SPRING_RABBITMQ_PORT=5671" \
+              "SPRING_RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}" \
+              "SPRING_RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}" \
+              "SPRING_RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}" \
+              "SPRING_RABBITMQ_SSL_ENABLED=true"

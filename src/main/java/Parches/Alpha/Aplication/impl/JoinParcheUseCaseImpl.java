@@ -8,23 +8,34 @@ import Parches.Alpha.Domain.Enums.ParcheType;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.InvitationRepositorySPI;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.messaging.ParcheMemberJoinedMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 public class JoinParcheUseCaseImpl implements JoinParcheUseCase {
 
     private final ParcheRepositorySPI parcheRepository;
     private final InvitationRepositorySPI invitationRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.exchange.notification:notification.exchange}")
+    private String notificationExchange;
 
     @Autowired
-    public JoinParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, InvitationRepositorySPI invitationRepository) {
+    public JoinParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, InvitationRepositorySPI invitationRepository,
+                                  RabbitTemplate rabbitTemplate) {
         this.parcheRepository = parcheRepository;
         this.invitationRepository = invitationRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -49,5 +60,25 @@ public class JoinParcheUseCaseImpl implements JoinParcheUseCase {
 
         parche.addMember(studentId, MemberRole.STUDENT);
         parcheRepository.save(parche);
+        publishMemberJoined(parcheId, studentId);
+    }
+
+    /**
+     * chat-service agrega al miembro a la sala grupal a partir de esto. No
+     * debe tumbar el join si RabbitMQ está caído: se registra y se sigue.
+     */
+    private void publishMemberJoined(UUID parcheId, UUID studentId) {
+        try {
+            rabbitTemplate.convertAndSend(
+                    notificationExchange,
+                    "parche.member-joined",
+                    ParcheMemberJoinedMessage.builder()
+                            .parcheId(parcheId)
+                            .studentId(studentId)
+                            .build());
+        } catch (Exception e) {
+            log.warn("No se pudo publicar el miembro {} del parche {} para el chat grupal: {}",
+                    studentId, parcheId, e.getMessage());
+        }
     }
 }
