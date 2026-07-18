@@ -60,25 +60,28 @@ public class JoinParcheUseCaseImpl implements JoinParcheUseCase {
 
         parche.addMember(studentId, MemberRole.STUDENT);
         parcheRepository.save(parche);
-        publishMemberJoined(parcheId, studentId);
+        publishMemberJoined(parche, studentId);
     }
 
     /**
-     * chat-service agrega al miembro a la sala grupal a partir de esto. No
-     * debe tumbar el join si RabbitMQ está caído: se registra y se sigue.
+     * chat-service agrega al miembro a la sala grupal a partir de esto, y
+     * GamificationService acredita monas ANFITRION/ATLETA_PATIO. No debe
+     * tumbar el join si RabbitMQ está caído: se registra y se sigue.
      */
-    private void publishMemberJoined(UUID parcheId, UUID studentId) {
+    private void publishMemberJoined(Parche parche, UUID studentId) {
         try {
             rabbitTemplate.convertAndSend(
                     notificationExchange,
                     "parche.member-joined",
                     ParcheMemberJoinedMessage.builder()
-                            .parcheId(parcheId)
+                            .parcheId(parche.getId())
                             .studentId(studentId)
+                            .creatorId(parche.getCreatorStudentId())
+                            .category(parche.getCategory() == null ? null : parche.getCategory().name())
                             .build());
         } catch (Exception e) {
             log.warn("No se pudo publicar el miembro {} del parche {} para el chat grupal: {}",
-                    studentId, parcheId, e.getMessage());
+                    studentId, parche.getId(), e.getMessage());
         }
     }
 }

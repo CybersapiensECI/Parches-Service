@@ -64,27 +64,29 @@ public class AcceptInvitationUseCaseImpl implements AcceptInvitationUseCase {
 
         invitationRepository.save(invitation);
         parcheRepository.save(parche);
-        publishMemberJoined(parche.getId(), studentId);
+        publishMemberJoined(parche, studentId);
     }
 
     /**
      * Aceptar una invitacion tambien agrega un miembro: mismo evento que el
      * join directo, para que chat-service lo sume a la sala grupal y
-     * GamificationService acredite PATCH_JOINED. Best-effort: no tumba la
-     * aceptacion si RabbitMQ esta caido.
+     * GamificationService acredite PATCH_JOINED/ANFITRION/ATLETA_PATIO.
+     * Best-effort: no tumba la aceptacion si RabbitMQ esta caido.
      */
-    private void publishMemberJoined(UUID parcheId, UUID studentId) {
+    private void publishMemberJoined(Parche parche, UUID studentId) {
         try {
             rabbitTemplate.convertAndSend(
                     notificationExchange,
                     "parche.member-joined",
                     ParcheMemberJoinedMessage.builder()
-                            .parcheId(parcheId)
+                            .parcheId(parche.getId())
                             .studentId(studentId)
+                            .creatorId(parche.getCreatorStudentId())
+                            .category(parche.getCategory() == null ? null : parche.getCategory().name())
                             .build());
         } catch (Exception e) {
             log.warn("No se pudo publicar el miembro {} del parche {} para el chat grupal: {}",
-                    studentId, parcheId, e.getMessage());
+                    studentId, parche.getId(), e.getMessage());
         }
     }
 }
