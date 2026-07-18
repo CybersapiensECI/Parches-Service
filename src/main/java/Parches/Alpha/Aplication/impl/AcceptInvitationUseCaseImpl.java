@@ -9,23 +9,34 @@ import Parches.Alpha.Domain.Model.Invitation;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.InvitationRepositorySPI;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.messaging.ParcheMemberJoinedMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 public class AcceptInvitationUseCaseImpl implements AcceptInvitationUseCase {
 
     private final InvitationRepositorySPI invitationRepository;
     private final ParcheRepositorySPI parcheRepository;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.exchange.notification:notification.exchange}")
+    private String notificationExchange;
 
     @Autowired
-    public AcceptInvitationUseCaseImpl(InvitationRepositorySPI invitationRepository, ParcheRepositorySPI parcheRepository) {
+    public AcceptInvitationUseCaseImpl(InvitationRepositorySPI invitationRepository, ParcheRepositorySPI parcheRepository,
+                                       RabbitTemplate rabbitTemplate) {
         this.invitationRepository = invitationRepository;
         this.parcheRepository = parcheRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
@@ -53,5 +64,27 @@ public class AcceptInvitationUseCaseImpl implements AcceptInvitationUseCase {
 
         invitationRepository.save(invitation);
         parcheRepository.save(parche);
+        publishMemberJoined(parche.getId(), studentId);
+    }
+
+    /**
+     * Aceptar una invitacion tambien agrega un miembro: mismo evento que el
+     * join directo, para que chat-service lo sume a la sala grupal y
+     * GamificationService acredite PATCH_JOINED. Best-effort: no tumba la
+     * aceptacion si RabbitMQ esta caido.
+     */
+    private void publishMemberJoined(UUID parcheId, UUID studentId) {
+        try {
+            rabbitTemplate.convertAndSend(
+                    notificationExchange,
+                    "parche.member-joined",
+                    ParcheMemberJoinedMessage.builder()
+                            .parcheId(parcheId)
+                            .studentId(studentId)
+                            .build());
+        } catch (Exception e) {
+            log.warn("No se pudo publicar el miembro {} del parche {} para el chat grupal: {}",
+                    studentId, parcheId, e.getMessage());
+        }
     }
 }

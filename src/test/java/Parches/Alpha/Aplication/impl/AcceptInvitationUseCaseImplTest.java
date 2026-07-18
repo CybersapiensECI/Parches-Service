@@ -33,6 +33,9 @@ class AcceptInvitationUseCaseImplTest {
     @Mock
     private ParcheRepositorySPI parcheRepository;
 
+    @Mock
+    private org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+
     @InjectMocks
     private AcceptInvitationUseCaseImpl acceptInvitationUseCase;
 
