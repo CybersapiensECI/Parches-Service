@@ -70,15 +70,16 @@ public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
         parche.addMember(command.creatorStudentId(), MemberRole.CREATOR);
 
         UUID id = parcheRepository.save(parche);
-        publishParcheCreated(id, command.creatorStudentId());
+        publishParcheCreated(id, command.creatorStudentId(), parche.getCategory());
         return id;
     }
 
     /**
-     * chat-service crea la sala grupal a partir de esto. No debe tumbar la
-     * creación del parche si RabbitMQ está caído: se registra y se sigue.
+     * chat-service crea la sala grupal y GamificationService desbloquea
+     * monas a partir de esto. No debe tumbar la creación del parche si
+     * RabbitMQ está caído: se registra y se sigue.
      */
-    private void publishParcheCreated(UUID parcheId, UUID creatorId) {
+    private void publishParcheCreated(UUID parcheId, UUID creatorId, ParcheCategory category) {
         try {
             rabbitTemplate.convertAndSend(
                     notificationExchange,
@@ -86,6 +87,7 @@ public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
                     ParcheCreatedMessage.builder()
                             .parcheId(parcheId)
                             .creatorId(creatorId)
+                            .category(category == null ? null : category.name())
                             .build());
         } catch (Exception e) {
             log.warn("No se pudo publicar el parche creado {} para el chat grupal: {}",

@@ -7,7 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-/** chat-service la consume para crear la sala grupal (routing key parche.created). */
+/**
+ * chat-service la consume para crear la sala grupal, GamificationService
+ * para desbloquear monas de tipo PATCH_CREATED (routing key parche.created).
+ */
 @Getter
 @Builder
 @NoArgsConstructor
@@ -15,4 +18,5 @@ import java.util.UUID;
 public class ParcheCreatedMessage {
     private UUID parcheId;
     private UUID creatorId;
+    private String category;
 }
