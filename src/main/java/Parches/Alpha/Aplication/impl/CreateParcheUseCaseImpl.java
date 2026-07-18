@@ -7,6 +7,7 @@ import Parches.Alpha.Aplication.ports.CreateParcheUseCase;
 import Parches.Alpha.Domain.Enums.*;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,12 @@ import java.util.UUID;
 public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
 
     private final ParcheRepositorySPI parcheRepository;
+    private final ParcheEventPublisher eventPublisher;
 
     @Autowired
-    public CreateParcheUseCaseImpl(ParcheRepositorySPI parcheRepository) {
+    public CreateParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, ParcheEventPublisher eventPublisher) {
         this.parcheRepository = parcheRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -59,6 +62,8 @@ public class CreateParcheUseCaseImpl implements CreateParcheUseCase {
 
         parche.addMember(command.creatorStudentId(), MemberRole.CREATOR);
 
-        return parcheRepository.save(parche);
+        UUID savedId = parcheRepository.save(parche);
+        eventPublisher.publishParcheCreated(savedId, command.creatorStudentId(), parche.getCategory().name());
+        return savedId;
     }
 }

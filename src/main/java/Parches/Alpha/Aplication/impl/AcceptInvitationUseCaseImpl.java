@@ -9,6 +9,7 @@ import Parches.Alpha.Domain.Model.Invitation;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.InvitationRepositorySPI;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +22,14 @@ public class AcceptInvitationUseCaseImpl implements AcceptInvitationUseCase {
 
     private final InvitationRepositorySPI invitationRepository;
     private final ParcheRepositorySPI parcheRepository;
+    private final ParcheEventPublisher eventPublisher;
 
     @Autowired
-    public AcceptInvitationUseCaseImpl(InvitationRepositorySPI invitationRepository, ParcheRepositorySPI parcheRepository) {
+    public AcceptInvitationUseCaseImpl(InvitationRepositorySPI invitationRepository, ParcheRepositorySPI parcheRepository,
+                                       ParcheEventPublisher eventPublisher) {
         this.invitationRepository = invitationRepository;
         this.parcheRepository = parcheRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -53,5 +57,6 @@ public class AcceptInvitationUseCaseImpl implements AcceptInvitationUseCase {
 
         invitationRepository.save(invitation);
         parcheRepository.save(parche);
+        eventPublisher.publishMemberJoined(parche.getId(), studentId);
     }
 }

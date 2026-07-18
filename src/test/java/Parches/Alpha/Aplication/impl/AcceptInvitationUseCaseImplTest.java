@@ -33,6 +33,9 @@ class AcceptInvitationUseCaseImplTest {
     @Mock
     private ParcheRepositorySPI parcheRepository;
 
+    @Mock
+    private Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher eventPublisher;
+
     @InjectMocks
     private AcceptInvitationUseCaseImpl acceptInvitationUseCase;
 

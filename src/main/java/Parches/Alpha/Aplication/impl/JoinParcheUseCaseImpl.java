@@ -8,6 +8,7 @@ import Parches.Alpha.Domain.Enums.ParcheType;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.spi.InvitationRepositorySPI;
 import Parches.Alpha.Domain.spi.ParcheRepositorySPI;
+import Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,14 @@ public class JoinParcheUseCaseImpl implements JoinParcheUseCase {
 
     private final ParcheRepositorySPI parcheRepository;
     private final InvitationRepositorySPI invitationRepository;
+    private final ParcheEventPublisher eventPublisher;
 
     @Autowired
-    public JoinParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, InvitationRepositorySPI invitationRepository) {
+    public JoinParcheUseCaseImpl(ParcheRepositorySPI parcheRepository, InvitationRepositorySPI invitationRepository,
+                                 ParcheEventPublisher eventPublisher) {
         this.parcheRepository = parcheRepository;
         this.invitationRepository = invitationRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -49,5 +53,6 @@ public class JoinParcheUseCaseImpl implements JoinParcheUseCase {
 
         parche.addMember(studentId, MemberRole.STUDENT);
         parcheRepository.save(parche);
+        eventPublisher.publishMemberJoined(parcheId, studentId);
     }
 }
