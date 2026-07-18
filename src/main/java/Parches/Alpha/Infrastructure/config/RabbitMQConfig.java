@@ -1,4 +1,4 @@
-package Parches.Alpha.Infrastructure.output.messaging;
+package Parches.Alpha.Infrastructure.config;
 
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -16,8 +16,8 @@ public class RabbitMQConfig {
     private String notificationExchange;
 
     /**
-     * Owned by notification-service; declarada aquí también para que publicar
-     * funcione sin importar cuál servicio arranca primero.
+     * Owned by chat-service/notification-service; declarada aquí también para
+     * que publicar funcione sin importar cuál de los servicios arranca primero.
      */
     @Bean
     public TopicExchange notificationExchange() {

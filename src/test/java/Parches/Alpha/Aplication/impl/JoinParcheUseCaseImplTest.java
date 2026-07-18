@@ -29,9 +29,6 @@ class JoinParcheUseCaseImplTest {
     @Mock
     private InvitationRepositorySPI invitationRepository;
 
-    @Mock
-    private Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher eventPublisher;
-
     @InjectMocks
     private JoinParcheUseCaseImpl joinParcheUseCase;
 

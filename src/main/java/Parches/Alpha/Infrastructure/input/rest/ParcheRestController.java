@@ -9,7 +9,11 @@ import Parches.Alpha.Aplication.ports.CreatePostUseCase;
 import Parches.Alpha.Aplication.ports.GetParchePostsUseCase;
 import Parches.Alpha.Aplication.ports.GetParcheMembersUseCase;
 import Parches.Alpha.Aplication.ports.GetUserParchesUseCase;
+import Parches.Alpha.Aplication.ports.GetParcheDetailUseCase;
+import Parches.Alpha.Aplication.ports.EditParcheUseCase;
+import Parches.Alpha.Aplication.ports.LeaveParcheUseCase;
 import Parches.Alpha.Aplication.ports.ImageStoragePort;
+import Parches.Alpha.Aplication.dto.UpdateParcheCommand;
 import Parches.Alpha.Domain.Model.Parche;
 import Parches.Alpha.Domain.Model.Post;
 import Parches.Alpha.Domain.Model.Member;
@@ -43,6 +47,9 @@ public class ParcheRestController {
     private final GetParchePostsUseCase getParchePostsUseCase;
     private final GetParcheMembersUseCase getParcheMembersUseCase;
     private final GetUserParchesUseCase getUserParchesUseCase;
+    private final GetParcheDetailUseCase getParcheDetailUseCase;
+    private final EditParcheUseCase editParcheUseCase;
+    private final LeaveParcheUseCase leaveParcheUseCase;
     private final ImageStoragePort imageStoragePort;
 
     @PostMapping
@@ -75,6 +82,55 @@ public class ParcheRestController {
         ParcheQueryFilter filter = new ParcheQueryFilter(category, place, date, availableSlots, query);
         List<Parche> parches = searchAvailableParchesUseCase.execute(filter, page, size);
         return ResponseEntity.ok(parches);
+    }
+
+    @GetMapping("/{parcheId}")
+    @Operation(summary = "Get parche details", description = "Retrieve complete details of a parche including members list.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved parche details"),
+            @ApiResponse(responseCode = "404", description = "Parche not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> getParcheDetail(
+            @Parameter(description = "ID of the parche to retrieve", required = true) @PathVariable UUID parcheId
+    ) {
+        Parche parche = getParcheDetailUseCase.execute(parcheId);
+        return ResponseEntity.ok(parche);
+    }
+
+    @PutMapping("/{parcheId}")
+    @Operation(summary = "Edit parche", description = "Update parche details. Only the captain can edit. Validates quota between 2 and 30.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated parche"),
+            @ApiResponse(responseCode = "400", description = "Invalid quota or validation error"),
+            @ApiResponse(responseCode = "403", description = "Only captain can edit"),
+            @ApiResponse(responseCode = "404", description = "Parche not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> editParche(
+            @Parameter(description = "ID of the parche to edit", required = true) @PathVariable UUID parcheId,
+            @Parameter(description = "UUID of the captain requesting the edit", required = true) @RequestParam UUID captainId,
+            @RequestBody UpdateParcheCommand command
+    ) {
+        editParcheUseCase.execute(parcheId, command, captainId);
+        return ResponseEntity.ok(java.util.Map.of("message", "Parche actualizado exitosamente."));
+    }
+
+    @PostMapping("/{parcheId}/leave")
+    @Operation(summary = "Leave parche", description = "Allows a member to leave a parche. Captain cannot leave without transferring role or closing parche.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully left parche"),
+            @ApiResponse(responseCode = "400", description = "Student is not a member or captain cannot leave"),
+            @ApiResponse(responseCode = "403", description = "Captain cannot leave"),
+            @ApiResponse(responseCode = "404", description = "Parche not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<?> leaveParche(
+            @Parameter(description = "ID of the parche to leave", required = true) @PathVariable UUID parcheId,
+            @RequestBody LeaveRequest request
+    ) {
+        leaveParcheUseCase.execute(parcheId, request.studentId());
+        return ResponseEntity.ok(java.util.Map.of("message", "Te has salido exitosamente del parche."));
     }
 
     @PostMapping("/{parcheId}/join")
@@ -160,6 +216,12 @@ public class ParcheRestController {
     @Schema(description = "Request body to join a parche")
     public record JoinRequest(
             @Schema(description = "UUID of the student wishing to join", requiredMode = Schema.RequiredMode.REQUIRED)
+            UUID studentId
+    ) {}
+
+    @Schema(description = "Request body to leave a parche")
+    public record LeaveRequest(
+            @Schema(description = "UUID of the student wishing to leave", requiredMode = Schema.RequiredMode.REQUIRED)
             UUID studentId
     ) {}
 }

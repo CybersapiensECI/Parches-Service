@@ -1,27 +1,66 @@
-name: Continuous Deployment to Production (Docker)
+name: CD Prod - Parches Service
 
 on:
   push:
     branches: [ "main" ]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/cybersapienseci/parches-service
+
 jobs:
-  build-and-push-docker:
+  deploy-prod:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - name: Descargar codigo del repositorio
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Iniciar sesion en Docker Hub
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Construir y subir imagen de Docker (PROD)
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: vanessatorres21/parches-service:latest
+          tags: ${{ env.IMAGE_NAME }}:prod-${{ github.sha }},${{ env.IMAGE_NAME }}:latest
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PARCHES }}
+
+      - name: Deploy to Azure Container Apps (Prod)
+        run: |
+          az containerapp up \
+            --name parches-service-prod \
+            --resource-group gr-alphaeci-prod \
+            --environment gr-alphaeci-prod \
+            --image ${{ env.IMAGE_NAME }}:prod-${{ github.sha }} \
+            --ingress external \
+            --target-port 8080
+
+          az containerapp update \
+            --name parches-service-prod \
+            --resource-group gr-alphaeci-prod \
+            --min-replicas 0 \
+            --max-replicas 1 \
+            --set-env-vars \
+              "DB_URL=${{ secrets.DB_URL_PROD }}" \
+              "DB_USERNAME=${{ secrets.DB_USERNAME }}" \
+              "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" \
+              "SPRING_RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}" \
+              "SPRING_RABBITMQ_PORT=5671" \
+              "SPRING_RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}" \
+              "SPRING_RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}" \
+              "SPRING_RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}" \
+              "SPRING_RABBITMQ_SSL_ENABLED=true"

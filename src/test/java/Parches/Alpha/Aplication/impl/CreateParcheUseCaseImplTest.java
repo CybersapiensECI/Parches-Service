@@ -28,9 +28,6 @@ class CreateParcheUseCaseImplTest {
     @Mock
     private ParcheRepositorySPI parcheRepository;
 
-    @Mock
-    private Parches.Alpha.Infrastructure.output.messaging.ParcheEventPublisher eventPublisher;
-
     @InjectMocks
     private CreateParcheUseCaseImpl createParcheUseCase;
 
